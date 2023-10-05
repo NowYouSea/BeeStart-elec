@@ -9,12 +9,11 @@
 #define DHT11PIN 16
 
 // Replace the next variables with your SSID/Password combination
-const char* ssid = "*****";
-const char* password = "*****";
+const char *ssid = "*******";
+const char *password = "********";
+const char *mqtt_server = "*******";
 
-// Add your MQTT Broker IP address, example:
-//const char* mqtt_server = "192.168.1.144";
-const char* mqtt_server = "192.168.1.30";
+const char *deviceId = "UZRERgjfuft";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -22,76 +21,79 @@ long lastMsg = 0;
 char msg[50];
 int value = 0;
 
-
 DHT dht(DHT11PIN, DHT11);
-
 
 float temperature = 0;
 float humidity = 0;
 
-
-void setup() {
+void setup()
+{
   delay(100);
   Serial.begin(115200);
   // default settings
   // (you can also pass in a Wire library object like &Wire2)
-  //status = bme.begin();
+  // status = bme.begin();
   dht.begin();
-  
+
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-
-
-  if (!client.connected()) {
+  if (!client.connected())
+  {
     reconnect();
   }
   client.loop();
-  
+
   /*long now = millis();
   if (now - lastMsg > 6000) {
     lastMsg = now;*/
-    
-    // Temperature in Celsius
-    temperature = dht.readTemperature();   
-    // Uncomment the next line to set temperature in Fahrenheit 
-    // (and comment the previous temperature line)
-    //temperature = 1.8 * bme.readTemperature() + 32; // Temperature in Fahrenheit
-    
-    // Convert the value to a char array
-    char tempString[8];
-    dtostrf(temperature, 1, 2, tempString);
-    Serial.print("Temperature: ");
-    Serial.println(temperature);
 
-    //client.publish("/home/bedroom/lit/temperature", tempString);
+  // Temperature in Celsius
+  temperature = dht.readTemperature();
+  // Uncomment the next line to set temperature in Fahrenheit
+  // (and comment the previous temperature line)
+  // temperature = 1.8 * bme.readTemperature() + 32; // Temperature in Fahrenheit
 
-    humidity = dht.readHumidity();
-    
-    // Convert the value to a char array
-    char humString[8];
-    dtostrf(humidity, 1, 2, humString);
-    Serial.print("Humidity: ");
-    Serial.println(humString);
-    //client.publish("/home/bedroom/lit/humidity", humString);
+  // Convert the value to a char array
+  char tempString[8];
+  dtostrf(temperature, 1, 2, tempString);
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
 
-    StaticJsonDocument<80> doc;
-    char output[80];
+  // client.publish("/home/bedroom/lit/temperature", tempString);
 
-    doc["t"] = temperature;
-    doc["h"] = humidity;
+  humidity = dht.readHumidity();
 
-    serializeJson(doc, output);
-    client.publish("/home/living/",output);
+  // Convert the value to a char array
+  char humString[8];
+  dtostrf(humidity, 1, 2, humString);
+  Serial.print("Humidity: ");
+  Serial.println(humString);
+  // client.publish("/home/bedroom/lit/humidity", humString);
 
-    delay(1000);
-    esp_sleep_enable_timer_wakeup(1800000000);
-    esp_deep_sleep_start();    
+  StaticJsonDocument<80> doc;
+
+  char topic[80] = "/beehive/";
+  strcat(topic, deviceId);
+  strcat(topic, "/");
+  Serial.println(topic);
+
+  char output[80];
+  doc["id"] = deviceId;
+  doc["t"] = temperature;
+  doc["h"] = humidity;
+  serializeJson(doc, output);
+  client.publish(topic, output);
+
+  delay(1000);
+  esp_sleep_enable_timer_wakeup(1800000000);
+  esp_deep_sleep_start();
   //}
 }
 
-void setup_wifi() {
+void setup_wifi()
+{
   delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
@@ -100,7 +102,8 @@ void setup_wifi() {
 
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -111,32 +114,38 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-void callback(char* topic, byte* message, unsigned int length) {
+void callback(char *topic, byte *message, unsigned int length)
+{
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
   Serial.print(". Message: ");
   String messageTemp;
-  
-  for (int i = 0; i < length; i++) {
+
+  for (int i = 0; i < length; i++)
+  {
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
   Serial.println();
 
   // Feel free to add more if statements to control more GPIOs with MQTT
-
 }
 
-void reconnect() {
+void reconnect()
+{
   // Loop until we're reconnected
-  while (!client.connected()) {
+  while (!client.connected())
+  {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("")) {
+    if (client.connect(""))
+    {
       Serial.println("connected");
       // Subscribe
-      //client.subscribe("esp32/output");
-    } else {
+      // client.subscribe("esp32/output");
+    }
+    else
+    {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
@@ -145,6 +154,6 @@ void reconnect() {
     }
   }
 }
-void loop() {
-  
+void loop()
+{
 }
