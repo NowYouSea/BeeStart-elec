@@ -6,14 +6,16 @@
 #include <Adafruit_Sensor.h>
 #include "DHT.h"
 
+#include "creds.h"
+
 #define DHT11PIN 16
 
 // Replace the next variables with your SSID/Password combination
-const char *ssid = "*******";
-const char *password = "********";
-const char *mqtt_server = "*******";
+const char *ssid = MSSID;
+const char *password = PASSWORD;
+const char *mqtt_server = MQTTSERVER;
 
-const char *deviceId = "UZRERgjfuft";
+const char *deviceId = DEVICEID;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
