@@ -2,6 +2,15 @@
 
 ## Installation
 
+Create a creds.h file in the main folder.
+Complete with your informations :
+```
+#define DEVICEID "*****"
+#define MQTTSERVER "******"
+#define MSSID "*****"
+#define PASSWORD "*****"
+```
+
 ### Libraries to install :
 - ArduinoJson
 - PubSubClient
